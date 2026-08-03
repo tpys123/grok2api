@@ -1,0 +1,126 @@
+# grok2api 更新提醒（UPDATE-REMINDER）
+
+> 本机 grok2api 是 **本地构建镜像** 部署（`grok2api:local`），并带有未合入上游的代码修复。
+> 以后想升级版本时，**先完整读一遍本文档**，按步骤操作即可。
+
+---
+
+## 1. 当前状态速览（记录于 2026-08-03）
+
+| 项目 | 状态 |
+|------|------|
+| 部署方式 | Docker Compose，本地镜像 `grok2api:local` |
+| `.env` | `GROK2API_IMAGE=grok2api:local`（原为官方镜像，已改） |
+| 本地修复 | 前端 Select 下拉框节点过多无法滚动（`ui/select.tsx` 等 5 个文件） |
+| 防复发 | 已新增 `.gitattributes`（`*.sh text eol=lf`） |
+| 容器数据 | 卷 `grok2api_grok2api-data`（/app/data），更新容器**不丢** |
+| 已导入节点 | 116 个：`grok_build` 58 + `grok_web` 58（`clash-egress-nodes.csv` 导入） |
+| 未提交改动 | 5 个前端文件（已跟踪）+ `.gitattributes`（新文件） |
+| 相关文档 | `clash-egress-nodes.md`（导入/绑定说明）、`UPDATE-REMINDER.md`（本文档） |
+
+---
+
+## 2. 如何判断官方有新版本
+
+```bash
+# 查看官方 latest 镜像的版本号
+docker run --rm --entrypoint cat ghcr.io/chenyme/grok2api:latest /app/VERSION
+
+# 对比当前运行的版本
+docker exec grok2api cat /app/VERSION
+```
+
+版本号不同即官方有新版本。也可到 https://github.com/chenyme/grok2api/releases 查看。
+
+---
+
+## 3. 更新前准备
+
+```bash
+cd /d/docker-apps/grok2api
+
+# 1) 先提交/保存本地修复，防止丢失
+git add -A
+git commit -m "fix(ui): select dropdown scroll with many nodes + gitattributes"   # 如未提交过
+
+# 2) 备份数据卷（可选，推荐首次做）
+docker run --rm -v grok2api_grok2api-data:/data -v "$PWD":/backup alpine tar czf /backup/grok2api-data-backup.tar.gz -C /data .
+```
+
+---
+
+## 4. 更新流程
+
+### 步骤 A：检查上游是否已合并滚动修复
+
+在 https://github.com/chenyme/grok2api 搜索 `select.tsx` 中是否仍是
+`max-h-[--radix-select-content-available-height]`（旧写法 = 未修复）。
+
+### 步骤 A1：上游已修复 → 切回官方镜像（最简单）
+
+```bash
+# 改 .env：GROK2API_IMAGE=ghcr.io/chenyme/grok2api:latest
+docker compose pull grok2api
+docker compose up -d grok2api
+```
+
+以后保持官方镜像，正常 `docker compose pull && docker compose up -d` 升级即可。
+本地镜像和本地分支可以删除。
+
+### 步骤 A2：上游未修复 → 本地分支合并后重建（保留修复）
+
+```bash
+git fetch origin main
+git merge origin/main            # 只有 1 个源文件改动，通常无冲突
+docker build -t grok2api:local . # 重建本地镜像（需能访问 Docker Hub，见 §7）
+docker compose up -d grok2api    # 重启
+```
+
+---
+
+## 5. 更新后验证
+
+```bash
+docker ps --filter name=grok2api     # 应为 Up (healthy)
+docker exec grok2api cat /app/VERSION
+curl -s -o /dev/null -w "%{http_code}
+" http://127.0.0.1:8000/   # 200
+
+# 确认滚动修复仍在（若走 A2；A1 官方已含修复）
+docker exec grok2api sh -c 'grep -o "max-height:var(--radix-select-content-available-height)" /app/frontend/dist/assets/index-*.css | head -1'
+```
+
+节点数据在数据卷中，重启后自动保留；进入 **设置 → 出口代理** 确认 116 个节点还在。
+
+---
+
+## 6. 回退到本地修复版（若 A1 后想退回）
+
+```bash
+# .env 改回 GROK2API_IMAGE=grok2api:local
+docker compose up -d grok2api
+```
+
+---
+
+## 7. 常见坑（本机实测）
+
+1. **拉镜像超时**：Docker Hub 偶发 IPv6 连接超时（`dial tcp [2a03:2880:...]`）。
+   多试几次，或等网络恢复再 `docker build` / `docker compose pull`。
+2. **entrypoint 报错重启循环**（`exec .../grok2api-entrypoint failed: No such file or directory`）：
+   原因是 Windows `core.autocrlf=true` 把 shell 脚本转成 CRLF。已通过 `.gitattributes`
+   根治；**不要在 Windows 下手工编辑 `docker/entrypoint.sh` 再存成 CRLF**。
+3. **滚动修复丢失**：如果升级后发现下拉框又不能滚动，说明官方镜像尚未包含修复，
+   需按 §4-A2 重建本地镜像，或确认官方已修复后再切回。
+
+---
+
+## 8. 关键命令速查
+
+| 目的 | 命令 |
+|------|------|
+| 重建本地镜像 | `docker build -t grok2api:local .` |
+| 重启容器 | `docker compose up -d grok2api` |
+| 看容器日志 | `docker logs grok2api --tail 50` |
+| 查看当前节点 | 后台 设置 → 出口代理 |
+| 导入节点 | 见 `clash-egress-nodes.md` |
