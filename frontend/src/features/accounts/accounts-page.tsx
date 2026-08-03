@@ -1251,7 +1251,7 @@ export function AccountsPage() {
                 <TableHead className={cn("whitespace-nowrap", provider !== "grok_build" && "px-6")}>{t("accounts.quota")}</TableHead>
                 {provider === "grok_build" ? <TableHead className="whitespace-nowrap pl-4">{t("accountCredential.label")}</TableHead> : null}
                 <SortableTableHead field="createdAt" sortBy={sort.field} sortOrder={sort.order} initialOrder="desc" onSort={changeSort} className="whitespace-nowrap">{t("accounts.createdAt")}</SortableTableHead>
-                <TableHead className="whitespace-nowrap">{t("accounts.egressNode")}</TableHead>
+                <TableHead className="min-w-28 whitespace-nowrap">{t("accounts.egressNode")}</TableHead>
                 <TableActionHead />
               </TableRow>
             </TableHeader>
@@ -1278,7 +1278,7 @@ export function AccountsPage() {
                       ) : <span className="font-medium text-amber-700 dark:text-amber-300">{t("accountCredential.noAutoRefresh")}</span>}
 	                    </TableCell> : null}
                     <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{formatDateTime(account.createdAt, i18n.language)}</TableCell>
-                    <TableCell className="whitespace-nowrap text-xs">{account.egressNodeId ? <span className="font-medium">{egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`}</span> : <span className="text-muted-foreground">{t("accounts.egressNone")}</span>}</TableCell>
+                    <TableCell className="min-w-28 max-w-40 whitespace-nowrap text-xs"><span className="block truncate" title={account.egressNodeId ? (egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`) : undefined}>{account.egressNodeId ? <span className="font-medium">{egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`}</span> : <span className="text-muted-foreground">{t("accounts.egressNone")}</span>}</span></TableCell>
                     <TableActionCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8" aria-label={t("common.actions")}><MoreHorizontal /></Button></DropdownMenuTrigger>
