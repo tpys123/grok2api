@@ -1248,10 +1248,10 @@ export function AccountsPage() {
                 <SortableTableHead field="name" sortBy={sort.field} sortOrder={sort.order} onSort={changeSort}>{t("accounts.account")}</SortableTableHead>
                 <SortableTableHead field="type" sortBy={sort.field} sortOrder={sort.order} align="center" onSort={changeSort} className="whitespace-nowrap">{t("accountType.label")}</SortableTableHead>
                 <SortableTableHead field="status" sortBy={sort.field} sortOrder={sort.order} align="center" onSort={changeSort} className="whitespace-nowrap">{t("accounts.status")}</SortableTableHead>
+                <TableHead className="w-32 min-w-28 whitespace-nowrap">{t("accounts.egressNode")}</TableHead>
                 <TableHead className={cn("whitespace-nowrap", provider !== "grok_build" && "px-6")}>{t("accounts.quota")}</TableHead>
                 {provider === "grok_build" ? <TableHead className="whitespace-nowrap pl-4">{t("accountCredential.label")}</TableHead> : null}
                 <SortableTableHead field="createdAt" sortBy={sort.field} sortOrder={sort.order} initialOrder="desc" onSort={changeSort} className="whitespace-nowrap">{t("accounts.createdAt")}</SortableTableHead>
-                <TableHead className="min-w-28 whitespace-nowrap">{t("accounts.egressNode")}</TableHead>
                 <TableActionHead />
               </TableRow>
             </TableHeader>
@@ -1268,6 +1268,7 @@ export function AccountsPage() {
 	                    <TableCell className="min-w-0"><AccountNameCell account={account} /></TableCell>
                     <TableCell className="text-center whitespace-nowrap">{provider === "grok_web" ? <WebAccountType tier={account.webTier} /> : provider === "grok_console" ? <AccountTypeText label={t("accountType.console")} variant="free" /> : <AccountType quota={account.quota} />}</TableCell>
                     <TableCell className="text-center whitespace-nowrap"><AccountStatus account={account} /></TableCell>
+                    <TableCell className="w-32 min-w-28 max-w-40 whitespace-nowrap text-xs"><span className="block truncate" title={account.egressNodeId ? (egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`) : undefined}>{account.egressNodeId ? <span className="font-medium">{egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`}</span> : <span className="text-muted-foreground">{t("accounts.egressNone")}</span>}</span></TableCell>
                     <TableCell className={provider === "grok_build" ? undefined : "px-6"}>{provider === "grok_web" ? <WebQuota windows={account.quotaWindows ?? []} locale={i18n.language} tier={account.webTier} /> : provider === "grok_console" ? <ConsoleQuota windows={account.quotaWindows ?? []} locale={i18n.language} /> : <AccountQuota quota={account.quota} billing={account.billing} locale={i18n.language} />}</TableCell>
                     {provider === "grok_build" ? <TableCell className="whitespace-nowrap pl-4 text-xs">
                       {account.refreshable ? (
@@ -1278,7 +1279,6 @@ export function AccountsPage() {
                       ) : <span className="font-medium text-amber-700 dark:text-amber-300">{t("accountCredential.noAutoRefresh")}</span>}
 	                    </TableCell> : null}
                     <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{formatDateTime(account.createdAt, i18n.language)}</TableCell>
-                    <TableCell className="min-w-28 max-w-40 whitespace-nowrap text-xs"><span className="block truncate" title={account.egressNodeId ? (egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`) : undefined}>{account.egressNodeId ? <span className="font-medium">{egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`}</span> : <span className="text-muted-foreground">{t("accounts.egressNone")}</span>}</span></TableCell>
                     <TableActionCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8" aria-label={t("common.actions")}><MoreHorizontal /></Button></DropdownMenuTrigger>
