@@ -1237,8 +1237,9 @@ export function AccountsPage() {
               <col style={{ width: "18%" }} />
               <col style={{ width: "7%" }} />
               <col style={{ width: "7%" }} />
-              <col style={{ width: provider === "grok_build" ? "27%" : "43%" }} />
-              {provider === "grok_build" ? <col style={{ width: "16%" }} /> : null}
+              <col style={{ width: "12%" }} />
+              <col style={{ width: provider === "grok_build" ? "17%" : "31%" }} />
+              {provider === "grok_build" ? <col style={{ width: "14%" }} /> : null}
               <col style={{ width: "18%" }} />
               <col style={{ width: "4%" }} />
             </colgroup>
