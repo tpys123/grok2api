@@ -239,6 +239,11 @@ export function AccountsPage() {
     enabled: egressConfigurationOpen && egressConfigurationTask === "bind",
   });
 
+  const allEgressNodesQuery = useQuery({
+    queryKey: ["egress-nodes", "all"],
+    queryFn: () => listAllEgressNodes(),
+  });
+
   const invalidateAccountData = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: ["accounts"] });
     void queryClient.invalidateQueries({ queryKey: ["accounts", "summary"] });
@@ -1030,6 +1035,7 @@ export function AccountsPage() {
   const summaryUnavailable = summaryQuery.isError;
   const providerAccountTotal = provider === "grok_build" ? buildSummary.total : provider === "grok_web" ? webSummary.total : consoleSummary.total;
   const hasProviderAccounts = providerAccountTotal > 0 || (result?.total ?? 0) > 0;
+  const egressNodeNames = new Map((allEgressNodesQuery.data?.items ?? []).map((node) => [String(node.id), node.name]));
   const bindableEgressNodes = (egressNodesQuery.data?.items ?? []).filter((node) => node.enabled && node.proxyConfigured && scopeSupportsAccountProvider(node.scope, provider));
   const bulkTaskPending = quotaSyncMutation.isPending
     || allQuotaResetMutation.isPending
@@ -1245,15 +1251,16 @@ export function AccountsPage() {
                 <TableHead className={cn("whitespace-nowrap", provider !== "grok_build" && "px-6")}>{t("accounts.quota")}</TableHead>
                 {provider === "grok_build" ? <TableHead className="whitespace-nowrap pl-4">{t("accountCredential.label")}</TableHead> : null}
                 <SortableTableHead field="createdAt" sortBy={sort.field} sortOrder={sort.order} initialOrder="desc" onSort={changeSort} className="whitespace-nowrap">{t("accounts.createdAt")}</SortableTableHead>
+                <TableHead className="whitespace-nowrap">{t("accounts.egressNode")}</TableHead>
                 <TableActionHead />
               </TableRow>
             </TableHeader>
             {accountsQuery.isPending ? (
-              <TableBody><TableLoadingRow colSpan={provider === "grok_build" ? 8 : 7} /></TableBody>
+              <TableBody><TableLoadingRow colSpan={provider === "grok_build" ? 9 : 8} /></TableBody>
             ) : (
               <VirtualTableBody
                 items={result?.items ?? []}
-                colSpan={provider === "grok_build" ? 8 : 7}
+                colSpan={provider === "grok_build" ? 9 : 8}
                 rowHeight={56}
                 renderRow={(account) => (
 	                  <TableRow className="group h-14 [&>td]:py-1.5" key={account.id} data-state={selected.has(account.id) ? "selected" : undefined}>
@@ -1271,6 +1278,7 @@ export function AccountsPage() {
                       ) : <span className="font-medium text-amber-700 dark:text-amber-300">{t("accountCredential.noAutoRefresh")}</span>}
 	                    </TableCell> : null}
                     <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{formatDateTime(account.createdAt, i18n.language)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">{account.egressNodeId ? <span className="font-medium">{egressNodeNames.get(account.egressNodeId) ?? `#${account.egressNodeId}`}</span> : <span className="text-muted-foreground">{t("accounts.egressNone")}</span>}</TableCell>
                     <TableActionCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8" aria-label={t("common.actions")}><MoreHorizontal /></Button></DropdownMenuTrigger>
