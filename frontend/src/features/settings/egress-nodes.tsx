@@ -283,6 +283,7 @@ export function EgressNodes({ title, clearanceMode }: { title: string; clearance
                   <div className="flex min-w-0 items-center gap-2">
                     <span className={cn("size-1.5 shrink-0 rounded-full", node.enabled ? "bg-emerald-500" : "bg-muted-foreground/35")} />
                     <span className={cn("truncate text-xs font-medium", !node.enabled && "text-muted-foreground")} title={node.name}>{node.name}</span>
+                    {node.assignedAccountCount > 0 ? <Badge variant="secondary" className="shrink-0 bg-emerald-500/10 text-[10px] text-emerald-700 dark:text-emerald-300">{t("settings.egress.boundAccounts", { count: node.assignedAccountCount })}</Badge> : null}
                     {node.lastError ? <ErrorTooltip message={node.lastError} /> : null}
                   </div>
                 </TableCell>
