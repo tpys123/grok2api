@@ -15,7 +15,9 @@
 | 防复发 | 已新增 `.gitattributes`（`*.sh text eol=lf`） |
 | 容器数据 | 卷 `grok2api_grok2api-data`（/app/data），更新容器**不丢** |
 | 已导入节点 | 116 个：`grok_build` 58 + `grok_web` 58（`clash-egress-nodes.csv` 导入） |
-| 未提交改动 | 5 个前端文件（已跟踪）+ `.gitattributes`（新文件） |
+| 本地提交 | 4 个 commit 在 `main`（滚动修复、gitattributes、更新提醒、gitignore），均已 push 到 fork |
+| GitHub fork | `tpys123/grok2api`，`main` 与 `fix/select-dropdown-scroll` 分支已同步 |
+| 私有文件防护 | 代理节点、config.yaml、.env 等均在 `.gitignore`，`git add -A` 也不会误提交 |
 | 相关文档 | `clash-egress-nodes.md`（导入/绑定说明）、`UPDATE-REMINDER.md`（本文档） |
 
 ---
@@ -39,9 +41,9 @@ docker exec grok2api cat /app/VERSION
 ```bash
 cd /d/docker-apps/grok2api
 
-# 1) 先提交/保存本地修复，防止丢失
-git add -A
-git commit -m "fix(ui): select dropdown scroll with many nodes + gitattributes"   # 如未提交过
+# 1) 确认本地提交完整（修复应已在 main 上；私有文件已被 .gitignore 兜底）
+git status          # 应无未提交的源码改动
+git log --oneline -5
 
 # 2) 备份数据卷（可选，推荐首次做）
 docker run --rm -v grok2api_grok2api-data:/data -v "$PWD":/backup alpine tar czf /backup/grok2api-data-backup.tar.gz -C /data .
@@ -50,6 +52,11 @@ docker run --rm -v grok2api_grok2api-data:/data -v "$PWD":/backup alpine tar czf
 ---
 
 ## 4. 更新流程
+
+> **重要：即使没把修复发给上游（不发 PR / 不 push），本地也完全能正常更新。**
+> 本地 `main` 完整保留了所有修复提交，fork（`tpys123/grok2api`）也有一份备份；
+> 就算本地电脑重装，先 `git clone https://github.com/tpys123/grok2api.git` 即可恢复，
+> 再按下面的步骤走。发 PR 只是为了让官方合并修复、以后能省掉本地镜像，不是更新的前提。
 
 ### 步骤 A：检查上游是否已合并滚动修复
 
