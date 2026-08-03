@@ -45,3 +45,11 @@ Thumbs.db
 /release/
 /.tmp/
 /tmp/
+
+# Local proxy node files / private tooling (do not commit)
+/clash-egress-nodes.csv
+/clash-egress-nodes.md
+/clash-egress-urls.txt
+/cookie-to-sso-tool.html
+/rename_egress.sql
+/docker-compose.local.yml
